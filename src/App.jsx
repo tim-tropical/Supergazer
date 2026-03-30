@@ -314,7 +314,13 @@ export default function App(){
   }
 
   const presentWorkdays=useMemo(()=>workdayNumbers.filter(d=>!isDayAbsent(d)),[workdayNumbers,empMutations,year,month]);
-  const totalHourDelta=useMemo(()=>Object.values(empMutations).flat().reduce((s,m)=>s+m.delta,0),[empMutations]);
+  const totalHourDelta = useMemo(() => {
+  const prefix = dateKey(year, month, 1).slice(0, 7); // "YYYY-MM"
+  return Object.entries(empMutations)
+    .filter(([key]) => key.startsWith(prefix))
+    .flatMap(([, muts]) => muts)
+    .reduce((s, m) => s + m.delta, 0);
+}, [empMutations, year, month]);
   const totalHours=workdayNumbers.length*HOURS_PER_DAY+totalHourDelta;
   const totalAccrued=useMemo(()=>emp?accruedVacationDays(emp,year,month):0,[emp,year,month]);
   const usedVacDays=useMemo(()=>Object.values(empMutations).flat().reduce((s,m)=>s+(m.vacationDays||0),0),[empMutations]);
