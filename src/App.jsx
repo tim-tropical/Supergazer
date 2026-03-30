@@ -314,13 +314,7 @@ export default function App(){
   }
 
   const presentWorkdays=useMemo(()=>workdayNumbers.filter(d=>!isDayAbsent(d)),[workdayNumbers,empMutations,year,month]);
-  const totalHourDelta = useMemo(() => {
-  const prefix = dateKey(year, month, 1).slice(0, 7); // "YYYY-MM"
-  return Object.entries(empMutations)
-    .filter(([key]) => key.startsWith(prefix))
-    .flatMap(([, muts]) => muts)
-    .reduce((s, m) => s + m.delta, 0);
-}, [empMutations, year, month]);
+  const totalHourDelta=useMemo(()=>Object.values(empMutations).flat().reduce((s,m)=>s+m.delta,0),[empMutations]);
   const totalHours=workdayNumbers.length*HOURS_PER_DAY+totalHourDelta;
   const totalAccrued=useMemo(()=>emp?accruedVacationDays(emp,year,month):0,[emp,year,month]);
   const usedVacDays=useMemo(()=>Object.values(empMutations).flat().reduce((s,m)=>s+(m.vacationDays||0),0),[empMutations]);
@@ -463,7 +457,7 @@ export default function App(){
 
   if(loading){
     return(
-      <div style={{minHeight:"100vh",background:"#f7f6f3",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
+      <div style={{minHeight:"100vh",background:"#f7f6f3",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Outfit','Segoe UI',sans-serif"}}>
         <div style={{textAlign:"center"}}>
           <div style={{fontSize:13,color:"#bbb",marginBottom:8}}>Laden...</div>
           <div style={{width:32,height:32,border:"2px solid #e8e6e1",borderTop:"2px solid #111",borderRadius:"50%",margin:"0 auto",animation:"spin 0.8s linear infinite"}}/>
@@ -474,9 +468,9 @@ export default function App(){
   }
 
   return(
-    <div style={{minHeight:"100vh",background:"#f7f6f3",fontFamily:"'DM Sans','Segoe UI',sans-serif",paddingBottom:60}}>
+    <div style={{minHeight:"100vh",background:"#f7f6f3",fontFamily:"'Outfit','Segoe UI',sans-serif",paddingBottom:60}}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
         button,input,select{font-family:inherit;}
         button{cursor:pointer;}
