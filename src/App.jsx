@@ -24,14 +24,13 @@ const INSPIRATION_OPTIONS = [
   { value: "genius",     label: "Genie",       color: "#2980b9" },
 ];
 
-function getDayOutlineColor(energy, inspiration) {
+function getDayLogColors(energy, inspiration) {
   const eOpt = ENERGY_OPTIONS.find(o => o.value === energy);
   const iOpt = INSPIRATION_OPTIONS.find(o => o.value === inspiration);
-  if (!eOpt && !iOpt) return null;
-  const colors = [eOpt?.color, iOpt?.color].filter(Boolean);
-  if (colors.includes("#2980b9")) return "#2980b9";
-  if (colors.includes("#27ae60")) return "#27ae60";
-  return "#e74c3c";
+  return {
+    energyColor: eOpt?.color || null,
+    inspirationColor: iOpt?.color || null,
+  };
 }
 
 const WEEKDAY_PRESETS = [
@@ -455,13 +454,13 @@ export default function App(){
     const isSel=day===selectedDay;
     const holiday=holidays[dateKey(year,month,day)];
     const log=empDayLogs[dateKey(year,month,day)];
-    const outlineColor=log?getDayOutlineColor(log.energy,log.inspiration):null;
+    const{energyColor,inspirationColor}=log?getDayLogColors(log.energy,log.inspiration):{energyColor:null,inspirationColor:null};
     let bg,numColor,labelColor;
     if(sick){bg=isSel?"#6c3483":"#f5eef8";numColor=isSel?"#fff":"#6c3483";labelColor=isSel?"rgba(255,255,255,0.75)":"#8e44ad";}
     else if(absent){bg=isSel?"#c0392b":"#fdf2f2";numColor=isSel?"#fff":"#c0392b";labelColor=isSel?"rgba(255,255,255,0.75)":"#e74c3c";}
     else if(holiday){bg=isSel?"#1a5276":"#eaf4fb";numColor=isSel?"#fff":"#1a5276";labelColor=isSel?"rgba(255,255,255,0.7)":"#2471a3";}
     else{bg=isSel?"#111":"transparent";numColor=!isSel?(weekend?"#b0aca3":"#111"):"#fff";labelColor=null;}
-    return{bg,numColor,labelColor,outlineColor};
+    return{bg,numColor,labelColor,energyColor,inspirationColor};
   }
 
   const newEmpTemplate={id:null,name:"",role:"",contractStart:"",contractMonths:12,birthday:"",vacationDaysPerYear:20};
@@ -556,7 +555,7 @@ export default function App(){
                 if(!day)return<div key={`e-${i}`}/>;
                 const isSel=day===selectedDay;
                 const today=isToday(year,month,day);
-                const{bg,numColor,labelColor,outlineColor}=getDayColors(day);
+                const{bg,numColor,labelColor,energyColor,inspirationColor}=getDayColors(day);
                 const delta=getDayDelta(day);
                 const vacD=getDayVacDays(day);
                 const pending=getDayPendingVac(day);
@@ -565,9 +564,13 @@ export default function App(){
                 const sick=isDayFullSick(day);
                 const isBirthday=birthdayDay===day;
                 const holiday=holidays[dateKey(year,month,day)];
-                const borderColor=isSel?bg:outlineColor||( today?"#ccc":"transparent");
+                const baseBorder=isSel?`2px solid ${bg}`:today?"2px solid #ccc":"2px solid transparent";
                 return(
-                  <button key={day} onClick={()=>setSelectedDay(day)} style={{padding:"5px 1px 3px",borderRadius:7,border:`2px solid ${borderColor}`,background:bg,textAlign:"center",transition:"background 0.1s"}}>
+                  <button key={day} onClick={()=>setSelectedDay(day)} style={{padding:"5px 1px 3px",borderRadius:7,border:baseBorder,background:bg,textAlign:"center",transition:"background 0.1s",position:"relative",overflow:"hidden"}}>
+                    {/* Energy bar — left edge */}
+                    {energyColor&&!isSel&&<div style={{position:"absolute",left:0,top:0,bottom:0,width:3,background:energyColor,borderRadius:"3px 0 0 3px"}}/>}
+                    {/* Inspiration bar — right edge */}
+                    {inspirationColor&&!isSel&&<div style={{position:"absolute",right:0,top:0,bottom:0,width:3,background:inspirationColor,borderRadius:"0 3px 3px 0"}}/>}
                     <div style={{fontSize:12,fontWeight:isSel?600:400,color:numColor,fontFamily:"'DM Mono',monospace",lineHeight:1}}>{day}</div>
                     <div style={{height:15,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",marginTop:1}}>
                       {isBirthday&&<div style={{fontSize:9}}>🎂</div>}
